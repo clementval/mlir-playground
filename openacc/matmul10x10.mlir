@@ -6,7 +6,7 @@ func @compute(%A: memref<10x10xf32>, %B: memref<10x10xf32>,
   %c10 = constant 10 : index
   %c1 = constant 1 : index
 
-  acc.parallel {  
+  acc.parallel {
     acc.loop {
       loop.for %arg3 = %c0 to %c10 step %c1 {
         loop.for %arg4 = %c0 to %c10 step %c1 {
