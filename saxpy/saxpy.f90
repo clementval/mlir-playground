@@ -9,7 +9,7 @@ program main
 
 
   call saxpy(x,y,n,a)
-  print*,y(:)
+  print*,sum(y(:))
 
 contains
 
