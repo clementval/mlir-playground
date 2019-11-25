@@ -1,7 +1,8 @@
 // Check sequential CPU
 // ../../llvm-project/build/bin/mlir-opt --canonicalize --convert-openacc-to-seq -convert-std-to-llvm matmul10x10.mlir | ../../llvm-project/build/bin/mlir-cpu-runner -e main -entry-point-result=void -shared-libs=../../llvm-project/build/lib/libmlir_runner_utils.dylib
 // Check GPU
-// ../../llvm-project/build/bin/mlir-opt --canonicalize --convert-openacc-to-gpu --convert-loop-to-std --gpu-kernel-outlining matmul10x10.mlir | ../../llvm-project/build/bin/mlir-cuda-runner --shared-libs=../../llvm-project/build/lib/libcuda-runtime-wrappers.so,../../llvm-project/build/lib/libmlir_runner_utils.so --entry-point-result=void
+// ../../llvm-project/build/bin/mlir-opt --canonicalize --convert-openacc-to-gpu --convert-loop-to-std --gpu-kernel-outlining matmul10x10.mlir > temp.mlir
+// ../../llvm-project/build/bin/mlir-cuda-runner --shared-libs=../../llvm-project/build/lib/libcuda-runtime-wrappers.so,../../llvm-project/build/lib/libmlir_runner_utils.so --entry-point-result=void temp.mlir
 func @main() {
 
   %A = alloc() : memref<10x10xf32>
