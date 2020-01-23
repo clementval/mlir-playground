@@ -1,18 +1,19 @@
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --hared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
 
 func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
   %n: index, %a: f32) -> memref<1024xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
-  %c32 = constant 32 : index
+  %nblock = constant 8 : index
+  %nthread = constant 128 : index
 
   gpu.launch
-      blocks(%bx, %by, %bz) in (%nbx = %c32, %nby = %c1, %nbz = %c1)
-      threads(%tx, %ty, %tz) in (%ntx = %c32, %nty = %c1, %ntz = %c1)
-      args(%arg0 = %x, %arg1 = %y, %arg2 = %n, %arg3 = %a, %arg4 = %c32) : memref<1024xf32>, memref<1024xf32>, index, f32, index {
+      blocks(%bx, %by, %bz) in (%nbx = %nblock, %nby = %c1, %nbz = %c1)
+      threads(%tx, %ty, %tz) in (%ntx = %nthread, %nty = %c1, %ntz = %c1)
+      args(%arg0 = %x, %arg1 = %y, %arg2 = %n, %arg3 = %a, %arg4 = %nblock, %arg5 = %nthread) : memref<1024xf32>, memref<1024xf32>, index, f32, index, index {
 
       // blockIdx.x * blockDim.x + threadIdx.x
-      %blockIdx = muli %bx, %arg4 : index
+      %blockIdx = muli %bx, %arg5 : index
       %idx = addi %blockIdx, %tx : index
 
       // y[i] = a*x[i] + y[i];
