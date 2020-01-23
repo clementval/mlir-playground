@@ -16,13 +16,19 @@ func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
       %blockIdx = muli %bx, %arg5 : index
       %idx = addi %blockIdx, %tx : index
 
+      %inside = cmpi "slt", %idx, %arg2 : index
+
+      cond_br %inside, ^bb1, ^bb2
+
+^bb1:
       // y[i] = a*x[i] + y[i];
       %xi = load %arg0[%idx] : memref<1024xf32>
       %yi = load %arg1[%idx] : memref<1024xf32>
       %ax = mulf %arg3, %xi : f32
       %yy = addf %ax, %yi : f32
       store %yy, %arg1[%idx] : memref<1024xf32>
-
+      gpu.return
+^bb2:
       gpu.return
   }
 
