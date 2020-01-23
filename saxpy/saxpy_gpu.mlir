@@ -1,4 +1,4 @@
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --hared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
 
 func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
   %n: index, %a: f32) -> memref<1024xf32> {
