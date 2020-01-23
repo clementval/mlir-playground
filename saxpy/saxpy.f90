@@ -8,7 +8,7 @@ program main
   y(:) = 2.0
 
   call saxpy(x,y,n,a)
-  print*,sum(y(:))
+  print*,y(:)
 
 contains
 
@@ -18,12 +18,10 @@ contains
     real :: a, x(n), y(n)
     !$acc data create(x,y)
     !$acc update device(x,y)
-    !$acc parallel
-    !$acc loop
+    !$acc parallel loop
     do i = 1, n
       y(i) = a*x(i)+y(i)
     end do
-    !$acc end parallel
     !$acc update host(y)
     !$acc end data
   end subroutine saxpy
