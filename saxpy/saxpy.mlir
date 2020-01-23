@@ -1,5 +1,7 @@
 // RUN: ../../llvm-project/build/bin/mlir-opt --canonicalize -linalg-lower-to-loops -convert-linalg-to-llvm -convert-std-to-llvm  saxpy.mlir | ../../llvm-project/build/bin/mlir-cpu-runner -e main -entry-point-result=void -shared-libs=../../llvm-project/build/lib/libmlir_runner_utils.dylib
 
+// RUN: ../../llvm-project/build/bin/mlir-opt --canonicalize --convert-linalg-to-loops -convert-linalg-to-llvm -convert-std-to-llvm  saxpy.mlir | ../../llvm-project/build/bin/mlir-cpu-runner -e main -entry-point-result=void -shared-libs=../../llvm-project/build/lib/libmlir_runner_utils.so 
+
 func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
   %n: index, %a: f32) -> memref<1024xf32> {
   %c0 = constant 0 : index
