@@ -14,7 +14,7 @@ func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
         store %yy, %y[%arg0] : memref<1024xf32>
       }
     }
-  } attributes { num_gangs = 32, num_workers = 32 }
+  } attributes { num_gangs = 8, num_workers = 128 }
   return %y : memref<1024xf32>
 }
 
