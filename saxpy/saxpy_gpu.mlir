@@ -12,12 +12,15 @@ func @saxpy(%x: memref<1024xf32>, %y: memref<1024xf32>,
       threads(%tx, %ty, %tz) in (%ntx = %nthread, %nty = %c1, %ntz = %c1)
       args(%arg0 = %x, %arg1 = %y, %arg2 = %n, %arg3 = %a, %arg4 = %nblock, %arg5 = %nthread) : memref<1024xf32>, memref<1024xf32>, index, f32, index, index {
 
-      // blockIdx.x * blockDim.x + threadIdx.x
-      %blockIdx = muli %bx, %arg5 : index
-      %idx = addi %blockIdx, %tx : index
+      // i = blockIdx.x * blockDim.x + threadIdx.x
+      %tidx = "gpu.thread_id"() {dimension = "x"} : () -> (index)
+      %bidx = "gpu.block_id"() {dimension = "x"} : () -> (index)
+      %bdimx = "gpu.block_dim"() {dimension = "x"} : () -> (index)
+      %blockPos = muli %bidx, %bdimx : index
+      %idx = addi %blockPos, %tidx : index
 
+      // if (i < n)
       %inside = cmpi "slt", %idx, %arg2 : index
-
       cond_br %inside, ^bb1, ^bb2
 
 ^bb1:
