@@ -51,8 +51,8 @@ func @main() {
   linalg.fill(%x, %c1) : memref<1024xf32>, f32
   linalg.fill(%y, %c2) : memref<1024xf32>, f32
 
-  call @saxpy(%x, %y, %n, %a) : (memref<1024xf32>, memref<1024xf32>, index, f32) -> memref<1024xf32>
-  call @print_memref_1d_f32(%y): (memref<1024xf32>) -> ()
+  %y1 = call @saxpy(%x, %y, %n, %a) : (memref<1024xf32>, memref<1024xf32>, index, f32) -> memref<1024xf32>
+  call @print_memref_1d_f32(%y1): (memref<1024xf32>) -> ()
   return
 }
 
