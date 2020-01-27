@@ -1,3 +1,6 @@
+// RUN: mlir-opt --convert-std-to-llvm call_test.mlir | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,./build/liboaru.so --entry-point-result=void
+
+// Simple code to call external function of various kind
 
 func @main() {
   call @oaru_init() : () -> ()

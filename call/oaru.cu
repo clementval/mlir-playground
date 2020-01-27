@@ -1,3 +1,7 @@
+/*
+ * Set of basic function call from MLIR just for testing purpose
+ */
+
 #include <cuda.h>
 #include <stdio.h>
 
@@ -105,9 +109,14 @@ extern "C" void oaru_init() {
   if (cuResult != CUDA_SUCCESS) {
     print_cuda_error(cuResult);
   }
+
+  cuResult = cuDeviceGet(&device_, 0);
+  if (cuResult != CUDA_SUCCESS) {
+    std::cerr << "Error: cannot get device 0" << std::endl;
+    exit(1);
+  }
 }
 
 extern "C" void oaru_print_i32(int val) {
   printf("%d\n", val);
 }
-
