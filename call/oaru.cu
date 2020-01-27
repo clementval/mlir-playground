@@ -109,14 +109,128 @@ extern "C" void oaru_init() {
   if (cuResult != CUDA_SUCCESS) {
     print_cuda_error(cuResult);
   }
-
+  CUdevice device_;
   cuResult = cuDeviceGet(&device_, 0);
   if (cuResult != CUDA_SUCCESS) {
-    std::cerr << "Error: cannot get device 0" << std::endl;
+    print_cuda_error(cuResult);
+    exit(1);
+  }
+
+  CUcontext context_;
+  cuResult = cuCtxCreate(&context_, 0, device_);
+  if (cuResult != CUDA_SUCCESS) {
+    print_cuda_error(cuResult);
+    cuCtxDestroy(context_);
     exit(1);
   }
 }
 
+template <typename T, int N> struct MemRefType {
+  T *basePtr;
+  T *data;
+  int64_t offset;
+  int64_t sizes[N];
+  int64_t strides[N];
+};
+
+extern "C" void* oaru_allocate(void* hostPtr, size_t size) {
+  void *devPtr;
+  CUresult cuResult = CUDA_SUCCESS;
+  CUdeviceptr cuPtr;
+  cuResult = cuMemAlloc(&cuPtr, size);
+  if (cuResult == CUDA_SUCCESS) {
+    devPtr = (void *)(uintptr_t)cuPtr;
+    return devPtr;
+  } else {
+    print_cuda_error(cuResult);
+    exit(1);
+  }
+  return NULL;
+}
+
 extern "C" void oaru_print_i32(int val) {
   printf("%d\n", val);
+}
+
+template<typename T, int N>
+MemRefType<T, N> oaru_allocate_memref(const MemRefType<T, N> *arg) {
+  T* devicePtr = (T*)oaru_allocate(arg->basePtr, arg->sizes[0] * sizeof(T));
+  struct MemRefType<T, N> allocated;  
+  allocated.basePtr = devicePtr;
+  allocated.data = devicePtr;
+  allocated.offset = arg->offset;
+  allocated.sizes[0] = arg->sizes[0];
+  allocated.strides[0] = arg->strides[0];
+  return allocated;
+}
+
+extern "C" MemRefType<float, 1>
+oaru_allocate_memref_1d_float(const MemRefType<float, 1> *arg) {
+  return oaru_allocate_memref(arg);
+}
+
+template<typename T, int N> 
+void oaru_free(const MemRefType<T, N> *arg) {
+  CUresult cuResult = CUDA_SUCCESS;
+  CUdeviceptr dptr;
+  dptr = (CUdeviceptr) (uintptr_t) arg->basePtr;
+  cuResult = cuMemFree(dptr);
+  if (cuResult != CUDA_SUCCESS) {
+    print_cuda_error(cuResult);
+  }
+}
+
+extern "C" void
+oaru_free_memref_1d_float(const MemRefType<float, 1> *arg) {
+  oaru_free(arg);
+}
+
+template<typename T, int N1, int N2>
+void oaru_update_device(const MemRefType<T, N1> *host, 
+    const MemRefType<T, N2> *device) 
+{
+  CUresult cuResult = CUDA_SUCCESS;
+  CUdeviceptr dptr;
+  dptr = (CUdeviceptr) (uintptr_t) device->basePtr;
+  cuResult = cuMemcpyHtoD(dptr, host->basePtr, count(host) * sizeof(T));
+  if (cuResult != CUDA_SUCCESS) {
+    print_cuda_error(cuResult);
+    exit(1);
+  }
+}
+
+extern "C" void
+oaru_update_device_1d_float(const MemRefType<float, 1> *host, 
+    const MemRefType<float, 1> *device) 
+{
+  oaru_update_device(host, device);
+}
+
+template<typename T, int N1, int N2>
+void oaru_update_host(const MemRefType<T, N1> *host, 
+    const MemRefType<T, N2> *device) 
+{
+  CUresult cuResult = CUDA_SUCCESS;
+  CUdeviceptr dptr;
+  dptr = (CUdeviceptr) (uintptr_t) device->basePtr;
+  cuResult = cuMemcpyDtoH(host->basePtr, dptr, count(host) * sizeof(T));
+  if (cuResult != CUDA_SUCCESS) {
+    print_cuda_error(cuResult);
+    exit(1);
+  }
+}
+template<typename T, int N> 
+int64_t count(const MemRefType<T, N> *arg) {
+  int count = arg->sizes[0];
+  for(int i = 1; i < N; ++i) {
+    count *= arg->sizes[i];
+  }
+  return count;
+}
+
+extern "C" void
+oaru_update_host_1d_float(const MemRefType<float, 1> *host, 
+    const MemRefType<float, 1> *device) 
+{
+  oaru_update_host(host, device);
 }
