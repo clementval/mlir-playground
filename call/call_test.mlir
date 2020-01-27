@@ -19,6 +19,8 @@ func @main() {
   linalg.fill(%host_A, %cf1) : memref<10xf32>, f32
 
   call @print_memref_1d_f32(%host_A) : (memref<10xf32>) -> ()
+  // CHECK: Memref base@ = 0x{{.*}} rank = 1 offset = 0 sizes = [10] strides = [1] data = 
+  // CHECK-NEXT: [1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 
   // Allocate memory on the device
   %device_A = call @oaru_allocate_memref_1d_float(%host_A) : (memref<10xf32>) -> memref<10xf32,5>
@@ -54,6 +56,8 @@ func @main() {
   // Update host memory 
   call @oaru_update_host_1d_float(%host_A, %device_A) : (memref<10xf32>, memref<10xf32, 5>) -> ()
 
+  // CHECK: Memref base@ = 0x{{.*}} rank = 1 offset = 0 sizes = [10] strides = [1] data = 
+  // CHECK-NEXT: [12,  12,  12,  12,  12,  12,  12,  12,  12,  12]
   call @print_memref_1d_f32(%host_A) : (memref<10xf32>) -> ()
   call @oaru_free_memref_1d_float(%device_A) : (memref<10xf32, 5>) -> ()
   return
