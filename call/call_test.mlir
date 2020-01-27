@@ -55,11 +55,6 @@ func @main() {
   call @oaru_update_host_1d_float(%host_A, %device_A) : (memref<10xf32>, memref<10xf32, 5>) -> ()
 
   call @print_memref_1d_f32(%host_A) : (memref<10xf32>) -> ()
-
-  // Update host memory 
-  call @oaru_update_host_1d_float(%host_A, %device_A) : (memref<10xf32>, memref<10xf32, 5>) -> ()
-
-  call @print_memref_1d_f32(%host_A) : (memref<10xf32>) -> ()
   call @oaru_free_memref_1d_float(%device_A) : (memref<10xf32, 5>) -> ()
   return
 }
