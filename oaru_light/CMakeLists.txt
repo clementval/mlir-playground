@@ -8,3 +8,5 @@ enable_language(CUDA)
 find_package(CUDA 10.0 REQUIRED)
 
 add_library(oaru SHARED oaru.cu)
+
+install(TARGETS oaru DESTINATION bin)
