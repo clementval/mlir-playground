@@ -27,8 +27,8 @@ func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
 //  CHECK-NEXT:   %{{.*}} = constant 128 : index
 //  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) args(%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) : memref<1024xf32>, memref<1024xf32>, f32, index, index, index {
 //  CHECK-NEXT:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:      %{{.*}} = addi %{{.*}}, %0 : index
-//  CHECK-NEXT:      %{{.*}} = muli %{{.*}}, %arg10 : index
+//  CHECK-NEXT:      %{{.*}} = addi %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:      loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 //  CHECK-NEXT:        %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
 //  CHECK-NEXT:        %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
@@ -36,7 +36,7 @@ func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
 //  CHECK-NEXT:        %{{.*}} = addf %{{.*}}, %{{.*}} : f32
 //  CHECK-NEXT:        store %{{.*}}, %{{.*}}[%{{.*}}] : memref<1024xf32>
 //  CHECK-NEXT:      }
-//  CHECK-NEXT:      gpu.return
+//  CHECK-NEXT:      gpu.terminator
 //  CHECK-NEXT:    }
 
 
