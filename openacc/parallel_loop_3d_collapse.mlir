@@ -17,10 +17,26 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
           }
         }
       }
-    } attributes { collapse = 3 }
+    } attributes { collapse = 2 }
   } attributes { num_gangs = 10, num_workers = 10 }
   return %y : memref<10x10x10xf32>
 }
+
+// CHECK:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+//  CHECK-NEXT:   %{{.*}} = remi_signed %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT:   loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+//  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+//  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+//  CHECK-NEXT:     %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+//  CHECK-NEXT:     store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+//  CHECK-NEXT:   }
+//  CHECK-NEXT: }
+
 
 func @main() {
   %x = alloc() : memref<10x10x10xf32>
