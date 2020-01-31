@@ -19,7 +19,7 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
 //  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) args(%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) : memref<10xf32>, index, memref<10xf32> {
 //  CHECK-NEXT:      %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
 //  CHECK-NEXT:      store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
-//  CHECK-NEXT:      gpu.return
+//  CHECK-NEXT:      gpu.terminator
 //  CHECK-NEXT:   }
 //  CHECK-NEXT:   return %arg1 : memref<10xf32>
 //  CHECK-NEXT: }
