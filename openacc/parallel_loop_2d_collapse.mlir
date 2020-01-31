@@ -20,6 +20,39 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   return %y : memref<10x10xf32>
 }
 
+
+// CHECK:      %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = constant 1 : index
+// CHECK-NEXT: %{{.*}} = subi %{{.*}}, %c1_2 : index
+// CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = constant 0 : index
+// CHECK-NEXT: %{{.*}} = constant 1 : index
+// CHECK-NEXT: %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = constant 1 : index
+// CHECK-NEXT: %{{.*}} = subi %{{.*}}, %c1_5 : index
+// CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = constant 0 : index
+// CHECK-NEXT: %{{.*}} = constant 1 : index
+// CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT: loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:   %{{.*}} = remi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT:   %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT:   %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:   store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT: }
+
+
 func @main() {
   %x = alloc() : memref<10x10xf32>
   %y = alloc() : memref<10x10xf32>
