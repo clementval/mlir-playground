@@ -34,7 +34,10 @@
 # vscode
 .vscode
 
+# Buidl directory
 **/build
 
+# lit
 lit.cfg.py
 lit.site.cfg.py
+**/Output
