@@ -35,3 +35,6 @@
 .vscode
 
 **/build
+
+lit.cfg.py
+lit.site.cfg.py
