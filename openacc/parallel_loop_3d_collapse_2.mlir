@@ -23,13 +23,13 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   return %y : memref<10x10x10xf32>
 }
 
-// CHECK:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+//  CHECK:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
+//  CHECK-NEXT: loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 //  CHECK-NEXT:   %{{.*}} = remi_signed %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
 //  CHECK-NEXT:   loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 //  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
 //  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>

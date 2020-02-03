@@ -16,7 +16,7 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
 //  CHECK-NEXT:   %{{.*}}= constant 1 : index
 //  CHECK-NEXT:   %{{.*}}= constant 2 : index
 //  CHECK-NEXT:   %{{.*}}= constant 2 : index
-//  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) args(%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) : memref<10xf32>, index, memref<10xf32> {
+//  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
 //  CHECK-NEXT:      %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
 //  CHECK-NEXT:      store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
 //  CHECK-NEXT:      gpu.terminator
