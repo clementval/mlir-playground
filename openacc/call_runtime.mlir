@@ -1,4 +1,4 @@
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,./build/liboaru.so --entry-point-result=void | FileCheck %s
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck %s
 
 // Simple code to call external function of various kind
 
@@ -30,8 +30,7 @@ func @main() {
 
   gpu.launch
     blocks(%bx, %by, %bz) in (%nbx = %nblock, %nby = %ci1, %nbz = %ci1)
-    threads(%tx, %ty, %tz) in (%ntx = %nthread, %nty = %ci1, %ntz = %ci1)
-    args(%arg0 = %device_A, %arg1 = %n, %arg2 = %c11, %arg3 = %nblock, %arg4 = %nthread, %arg5 = %ci1) : memref<10xf32, 5>, index, f32, index, index, index {
+    threads(%tx, %ty, %tz) in (%ntx = %nthread, %nty = %ci1, %ntz = %ci1) {
 
     // i = blockIdx.x * blockDim.x + threadIdx.x
     %tidx = "gpu.thread_id"() {dimension = "x"} : () -> (index)
@@ -41,16 +40,16 @@ func @main() {
     %idx = addi %blockPos, %tidx : index
 
     // if (i < n)
-    %inside = cmpi "slt", %idx, %arg1 : index
+    %inside = cmpi "slt", %idx, %n : index
     cond_br %inside, ^bb1, ^bb2
 
     ^bb1:
-      %x = load %arg0[%idx] : memref<10xf32, 5>
-      %xi = addf %x, %arg2 : f32
-      store %xi, %arg0[%idx] : memref<10xf32, 5>
-      gpu.return
+      %x = load %device_A[%idx] : memref<10xf32, 5>
+      %xi = addf %x, %c11 : f32
+      store %xi, %device_A[%idx] : memref<10xf32, 5>
+      gpu.terminator
     ^bb2:
-      gpu.return
+      gpu.terminator
   }
 
   // Update host memory 
