@@ -41,3 +41,5 @@
 lit.cfg.py
 lit.site.cfg.py
 **/Output
+
+openacc/update_config
