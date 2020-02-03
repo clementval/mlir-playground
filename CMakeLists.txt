@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_language(CUDA)
 find_package(CUDA 10.0 REQUIRED)
 
-
 if(NOT DEFINED LLVM_BUILD_DIR)
   message(FATAL_ERROR "LLVM_BUILD_DIR need to be specified")
 endif()
@@ -19,14 +18,12 @@ endif()
 message(${LLVM_BUILD_DIR})
 message(${LIT_PATH})
 
+
+
 find_file(MLIR_LIT_SITE_CONFIG lit.site.cfg.py PATHS "${LLVM_BUILD_DIR}/tools/mlir/test")
 if(NOT DEFINED MLIR_LIT_SITE_CONFIG)
   message(FATAL_ERROR "Cannot find lit site config file for MLIR")
 endif()
 
-file(COPY ${MLIR_LIT_SITE_CONFIG} DESTINATION ${CMAKE_SOURCE_DIR}/openacc)
-
 add_subdirectory(oaru_light)
 add_subdirectory(openacc)
-
-add_custom_target(check-openacc ${LIT_PATH} "${CMAKE_SOURCE_DIR}/openacc/")

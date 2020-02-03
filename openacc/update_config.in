@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sed -i 's%lit_config.load_config(config, ".*")%lit_config.load_config(config, "@LIT_LOCAL_CFG_PATH@")%g' @LIT_SITE_CONFIG_PATH@
