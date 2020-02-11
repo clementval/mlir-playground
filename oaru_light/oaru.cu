@@ -154,7 +154,8 @@ extern "C" void oaru_print_i32(int val) {
 
 template<typename T, int N>
 MemRefType<T, N> oaru_allocate_memref(const MemRefType<T, N> *arg) {
-  T* devicePtr = (T*)oaru_allocate(arg->basePtr, arg->sizes[0] * sizeof(T));
+  T* devicePtr = (T*)oaru_allocate(arg->basePtr, count(arg) * sizeof(T));
+  
   struct MemRefType<T, N> allocated;  
   allocated.basePtr = devicePtr;
   allocated.data = devicePtr;
@@ -165,8 +166,16 @@ MemRefType<T, N> oaru_allocate_memref(const MemRefType<T, N> *arg) {
 }
 
 extern "C" MemRefType<float, 1>
-oaru_allocate_memref_1d_float(const MemRefType<float, 1> *arg) {
-  return oaru_allocate_memref(arg);
+oaru_allocate_memref_1d_float(float *allocated,
+                              float *aligned, int64_t offset,
+                              int64_t size, int64_t stride) {
+  MemRefType<float, 1> descriptor;
+  descriptor.basePtr = allocated;
+  descriptor.data = aligned;
+  descriptor.offset = offset;
+  descriptor.sizes[0] = size;
+  descriptor.strides[0] = stride;
+  return oaru_allocate_memref(&descriptor);
 }
 
 template<typename T, int N> 
@@ -181,13 +190,21 @@ void oaru_free(const MemRefType<T, N> *arg) {
 }
 
 extern "C" void
-oaru_free_memref_1d_float(const MemRefType<float, 1> *arg) {
-  oaru_free(arg);
+oaru_free_memref_1d_float(float *allocated,
+                          float *aligned, int64_t offset,
+                          int64_t size, int64_t stride) {
+  MemRefType<float, 1> descriptor;
+  descriptor.basePtr = allocated;
+  descriptor.data = aligned;
+  descriptor.offset = offset;
+  descriptor.sizes[0] = size;
+  descriptor.strides[0] = stride;
+  oaru_free(&descriptor);
 }
 
-template<typename T, int N1, int N2>
-void oaru_update_device(const MemRefType<T, N1> *host, 
-    const MemRefType<T, N2> *device) 
+template<typename T, int N>
+void oaru_update_device(const MemRefType<T, N> *host, 
+                        const MemRefType<T, N> *device) 
 {
   CUresult cuResult = CUDA_SUCCESS;
   CUdeviceptr dptr;
@@ -200,15 +217,32 @@ void oaru_update_device(const MemRefType<T, N1> *host,
 }
 
 extern "C" void
-oaru_update_device_1d_float(const MemRefType<float, 1> *host, 
-    const MemRefType<float, 1> *device) 
+oaru_update_device_1d_float(float *host_allocated, float *host_aligned, 
+                            int64_t host_offset, int64_t host_size, 
+                            int64_t host_stride, 
+                            float *device_allocated, float *device_aligned, 
+                            int64_t device_offset, int64_t device_size, 
+                            int64_t device_stride) 
 {
-  oaru_update_device(host, device);
+  MemRefType<float, 1> host_descriptor;
+  host_descriptor.basePtr = host_allocated;
+  host_descriptor.data = host_aligned;
+  host_descriptor.offset = host_offset;
+  host_descriptor.sizes[0] = host_size;
+  host_descriptor.strides[0] = host_stride;
+
+  MemRefType<float, 1> device_descriptor;
+  device_descriptor.basePtr = device_allocated;
+  device_descriptor.data = device_aligned;
+  device_descriptor.offset = device_offset;
+  device_descriptor.sizes[0] = device_size;
+  device_descriptor.strides[0] = device_stride;
+  oaru_update_device(&host_descriptor, &device_descriptor);
 }
 
 template<typename T, int N1, int N2>
 void oaru_update_host(const MemRefType<T, N1> *host, 
-    const MemRefType<T, N2> *device) 
+                      const MemRefType<T, N2> *device)
 {
   CUresult cuResult = CUDA_SUCCESS;
   CUdeviceptr dptr;
@@ -219,6 +253,7 @@ void oaru_update_host(const MemRefType<T, N1> *host,
     exit(1);
   }
 }
+
 template<typename T, int N> 
 int64_t count(const MemRefType<T, N> *arg) {
   int count = arg->sizes[0];
@@ -229,8 +264,26 @@ int64_t count(const MemRefType<T, N> *arg) {
 }
 
 extern "C" void
-oaru_update_host_1d_float(const MemRefType<float, 1> *host, 
-    const MemRefType<float, 1> *device) 
+oaru_update_host_1d_float(float *host_allocated, float *host_aligned, 
+                          int64_t host_offset, int64_t host_size, 
+                          int64_t host_stride, 
+                          float *device_allocated, float *device_aligned, 
+                          int64_t device_offset, int64_t device_size, 
+                          int64_t device_stride) 
 {
-  oaru_update_host(host, device);
+  MemRefType<float, 1> host_descriptor;
+  host_descriptor.basePtr = host_allocated;
+  host_descriptor.data = host_aligned;
+  host_descriptor.offset = host_offset;
+  host_descriptor.sizes[0] = host_size;
+  host_descriptor.strides[0] = host_stride;
+
+  MemRefType<float, 1> device_descriptor;
+  device_descriptor.basePtr = device_allocated;
+  device_descriptor.data = device_aligned;
+  device_descriptor.offset = device_offset;
+  device_descriptor.sizes[0] = device_size;
+  device_descriptor.strides[0] = device_stride;
+
+  oaru_update_host(&host_descriptor, &device_descriptor);
 }
