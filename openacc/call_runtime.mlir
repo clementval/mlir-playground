@@ -25,10 +25,10 @@ func @main() {
 
   // Allocate memory on the device
   %host_A_ptr_1d = memref_cast %host_A : memref<10xf32> to memref<?xf32>
-  %device_A_ptr = call @oaru_allocate_memref_1d_float(%host_A_ptr_1d) : (memref<?xf32>) -> memref<?xf32, 5>
+  %device_A_ptr = call @oaru_allocate_memref_1d_float(%host_A_ptr_1d) : (memref<?xf32>) -> memref<?xf32>
 
   // Update device memory with host memory
-  call @oaru_update_device_1d_float(%host_A_ptr_1d, %device_A_ptr) : (memref<?xf32>, memref<?xf32, 5>) -> ()
+  call @oaru_update_device_1d_float(%host_A_ptr_1d, %device_A_ptr) : (memref<?xf32>, memref<?xf32>) -> ()
 
 
   gpu.launch
@@ -47,31 +47,31 @@ func @main() {
     cond_br %inside, ^bb1, ^bb2
 
     ^bb1:
-      %x = load %device_A_ptr[%idx] : memref<?xf32, 5>
+      %x = load %device_A_ptr[%idx] : memref<?xf32>
       %xi = addf %x, %c11 : f32
-      store %xi, %device_A_ptr[%idx] : memref<?xf32, 5>
+      store %xi, %device_A_ptr[%idx] : memref<?xf32>
       gpu.terminator
     ^bb2:
       gpu.terminator
   }
  
   // Update host memory 
-  call @oaru_update_host_1d_float(%host_A_ptr_1d, %device_A_ptr) : (memref<?xf32>, memref<?xf32, 5>) -> ()
+  call @oaru_update_host_1d_float(%host_A_ptr_1d, %device_A_ptr) : (memref<?xf32>, memref<?xf32>) -> ()
   
   // CHECK: Memref base@ = 0x{{.*}} rank = 1 offset = 0 sizes = [10] strides = [1] data = 
   // CHECK-NEXT: [12,  12,  12,  12,  12,  12,  12,  12,  12,  12]
   call @print_memref_f32(%host_A_ptr) : (memref<*xf32>) -> ()
-  call @oaru_free_memref_1d_float(%device_A_ptr) : (memref<?xf32, 5>) -> ()
+  call @oaru_free_memref_1d_float(%device_A_ptr) : (memref<?xf32>) -> ()
 
   return
 }
 
 func @oaru_init()
 func @oaru_get_num_devices() -> i32
-func @oaru_allocate_memref_1d_float(memref<?xf32>) -> memref<?xf32,5>
-func @oaru_update_device_1d_float(memref<?xf32>, memref<?xf32,5>)
-func @oaru_update_host_1d_float(memref<?xf32>, memref<?xf32,5>)
-func @oaru_free_memref_1d_float(memref<?xf32, 5>)
+func @oaru_allocate_memref_1d_float(memref<?xf32>) -> memref<?xf32>
+func @oaru_update_device_1d_float(memref<?xf32>, memref<?xf32>)
+func @oaru_update_host_1d_float(memref<?xf32>, memref<?xf32>)
+func @oaru_free_memref_1d_float(memref<?xf32>)
 func @oaru_print_i32(%val: i32) -> ()
 
 func @print_memref_f32(%ptr : memref<*xf32>)
