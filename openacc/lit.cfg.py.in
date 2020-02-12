@@ -56,6 +56,8 @@ llvm_config.with_environment('PATH', config.llvm_tools_dir, append_path=True)
 tool_dirs = [config.mlir_tools_dir, config.llvm_tools_dir]
 tools = [
     'mlir-opt',
+    'mlir-cuda-runner',
+    'mlir-cpu-runner',
     'mlir-tblgen',
     'mlir-translate',
     'mlir-edsc-builder-api-test',
