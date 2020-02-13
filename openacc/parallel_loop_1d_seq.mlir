@@ -6,7 +6,7 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   %c1 = constant 1 : index
 
   // x[i] = x[i] + x[i-1];
-  acc.parallel {
+  acc.parallel num_gangs(8) num_workers(128) {
     acc.loop {
       loop.for %arg0 = %c1 to %n step %c1 {
         %xi = load %x[%arg0] : memref<20xf32>
@@ -16,7 +16,7 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
         store %tmp, %x[%arg0] : memref<20xf32>
       }
     } attributes { seq }
-  } attributes { num_gangs = 8, num_workers = 128 }
+  }
   return %x : memref<20xf32>
 }
 

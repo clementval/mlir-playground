@@ -6,7 +6,7 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   %c1 = constant 1 : index
 
   // y[i] = a*x[i] + y[i];
-  acc.parallel {
+  acc.parallel num_gangs(10) num_workers(10) {
     acc.loop {
       loop.for %arg0 = %c0 to %n step %c1 {
         acc.loop {
@@ -19,7 +19,7 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
         } attributes { vector }
       }
     } attributes { gang }
-  } attributes { num_gangs = 10, num_workers = 10 }
+  }
   return %y : memref<10x10xf32>
 }
 

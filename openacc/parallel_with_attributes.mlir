@@ -3,10 +3,10 @@
 func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
   %c0 = constant 0 : index
 
-  acc.parallel {
+  acc.parallel num_gangs(2) num_workers(2) {
     %tmp = load %A[%c0] : memref<10xf32>
     store %tmp, %B[%c0] : memref<10xf32>
-  } attributes { num_gangs = 2, num_workers = 2 }
+  }
 
   return %B : memref<10xf32>
 }
