@@ -19,7 +19,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
         }
       }
     } attributes { collapse = 3 }
-  } attributes { num_gangs = 8, num_workers = 128 }
+  }
   return %y : memref<10x10x10xf32>
 }
 
