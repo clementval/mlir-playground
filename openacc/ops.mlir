@@ -1,4 +1,4 @@
-// RUN: mlir-opt %s | mlir-opt | FileCheck %s
+// RUN: mlir-opt --canonicalize %s | mlir-opt | FileCheck %s
 
 func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   %n: index) -> memref<10x10x10xf32> {
@@ -28,6 +28,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   // CHECK:      acc.parallel {
   // CHECK-NEXT:   acc.loop seq {
   acc.parallel {
+    acc.loop {}
     acc.loop seq {
       loop.for %arg2 = %c0 to %n step %c1 {
         %xi = load %x[%c0, %c1, %arg2] : memref<10x10x10xf32>
@@ -37,6 +38,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
       }
     }
   }
+
   return %y : memref<10x10x10xf32>
 }
 
