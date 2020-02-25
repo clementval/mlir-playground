@@ -21,17 +21,22 @@ func @main() {
 
   acc.parallel num_gangs(10) num_workers(10) private(%c : memref<10xf32>) {
     acc.loop gang {
+      // for x = 0 to 10 step 1
+      //   for y = 0 to 10 step 1
+      //     c[y] = a[x,y] + b[x,y]
       loop.for %x = %lb to %n step %st {
         acc.loop worker {
           loop.for %y = %lb to %n step %st {
             %axy = load %a[%x, %y] : memref<10x10xf32>
-            %bxy = load %a[%x, %y] : memref<10x10xf32>
+            %bxy = load %b[%x, %y] : memref<10x10xf32>
             %tmp = addf %axy, %bxy : f32
             store %tmp, %c[%y] : memref<10xf32>
           }
         }
 
         acc.loop seq {
+          // for i = 0 to 10 step 1
+          //   d[i] += c[i]
           loop.for %i = %lb to %n step %st {
             %ci = load %c[%i] : memref<10xf32>
             %di = load %d[%i] : memref<10xf32>
@@ -45,7 +50,7 @@ func @main() {
 
   %d_ptr = memref_cast %d : memref<10xf32> to memref<*xf32>
   call @print_memref_f32(%d_ptr): (memref<*xf32>) -> ()
-  // CHECK: [9,  8,  7,  6,  5,  4,  3,  2,  1,  0]
+  // CHECK: [30,  30,  30,  30,  30,  30,  30,  30,  30,  30]
   return
 }
 
