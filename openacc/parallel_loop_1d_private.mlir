@@ -1,4 +1,5 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-target --convert-loop-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --prefix EXEC
 
 func @main() {
   %a = alloc() : memref<10x10xf32>
@@ -36,7 +37,7 @@ func @main() {
       
         acc.loop seq {
           // for i = 0 to 10 step 1
-          //   d[i] += c[i]
+          //   d[x] += c[i]
           loop.for %i = %lb to %n step %st {
             %ci = load %c[%i] : memref<10xf32>
             %dx = load %d[%x] : memref<10xf32>
@@ -50,7 +51,7 @@ func @main() {
 
   %d_ptr = memref_cast %d : memref<10xf32> to memref<*xf32>
   call @print_memref_f32(%d_ptr): (memref<*xf32>) -> ()
-  // CHECK: [30,  30,  30,  30,  30,  30,  30,  30,  30,  30]
+  // EXEC: [30,  30,  30,  30,  30,  30,  30,  30,  30,  30]
   return
 }
 
