@@ -34,6 +34,7 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
 // CHECK-NEXT:   %{{.*}} = constant 128 : index
 // CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:   %{{.*}} = constant 128 : index
 // CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
 // CHECK-NEXT:     %{{.*}} = muli %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:     %{{.*}} = addi %{{.*}}, %{{.*}} : index
