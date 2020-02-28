@@ -39,6 +39,36 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
     }
   }
 
+  // CHECK:      acc.parallel {
+  // CHECK-NEXT:   acc.gang_redundant {
+  // CHECK-NEXT:   }
+  // CHECK-NEXT:   acc.loop {
+  // CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {  
+  // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+  // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+  // CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+  // CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
+  // CHECK-NEXT:     }
+  // CHECK-NEXT:   }
+  // CHECK-NEXT:   acc.gang_redundant {
+  // CHECK-NEXT:   } 
+  // CHECK-NEXT: }
+  acc.parallel {
+    acc.gang_redundant {
+    }
+    acc.loop {
+      loop.for %arg2 = %c0 to %n step %c1 {
+        %xi = load %x[%c0, %c1, %arg2] : memref<10x10x10xf32>
+        %yi = load %y[%c0, %c1, %arg2] : memref<10x10x10xf32>
+        %yy = mulf %xi, %yi : f32
+        store %yy, %y[%c0, %c1, %arg2] : memref<10x10x10xf32>
+      }
+    }
+    acc.gang_redundant {
+    }
+  }
+
+
   return %y : memref<10x10x10xf32>
 }
 
