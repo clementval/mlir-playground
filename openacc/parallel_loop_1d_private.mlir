@@ -33,15 +33,15 @@ func @main() {
             store %tmp, %c[%y] : memref<10xf32>
           }
         }
-
+      
         acc.loop seq {
           // for i = 0 to 10 step 1
           //   d[i] += c[i]
           loop.for %i = %lb to %n step %st {
             %ci = load %c[%i] : memref<10xf32>
-            %di = load %d[%i] : memref<10xf32>
-            %z = addf %ci, %di : f32  
-            store %z, %d[%i] : memref<10xf32> 
+            %dx = load %d[%x] : memref<10xf32>
+            %z = addf %ci, %dx : f32  
+            store %z, %d[%x] : memref<10xf32> 
           }
         }
       }
