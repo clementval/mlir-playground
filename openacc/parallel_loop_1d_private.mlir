@@ -1,5 +1,5 @@
 // RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-target --convert-loop-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --prefix EXEC
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-target --convert-loop-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
 
 func @main() {
   %a = alloc() : memref<10x10xf32>
@@ -48,6 +48,32 @@ func @main() {
       }
     }
   }
+
+  
+  // CHECK:      gpu.module @main_acc_parallel {
+  // CHECK-NEXT:   gpu.func @main_acc_parallel(%{{.*}}: memref<10x10xf32>, %{{.*}}: memref<10x10xf32>, %{{.*}}: index, %{{.*}}: index, %{{.*}}: index, %{{.*}}: memref<10xf32>) workgroup(%{{.*}} : memref<10xf32, 3>) kernel {
+  // CHECK-NEXT:     %{{.*}} = "gpu.block_id"() {dimension = "x"} : () -> index
+  // CHECK-NEXT:     %{{.*}} = "gpu.thread_id"() {dimension = "x"} : () -> index
+  // CHECK-NEXT:     %{{.*}} = "gpu.grid_dim"() {dimension = "x"} : () -> index
+  // CHECK-NEXT:     %{{.*}} = "gpu.block_dim"() {dimension = "x"} : () -> index
+  // CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+  // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+  // CHECK-NEXT:         %{{.*}} = addf %{{.*}}, %{{.*}} : f32
+  // CHECK-NEXT:         store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32, 3>
+  // CHECK-NEXT:       }
+  // CHECK-NEXT:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32, 3>
+  // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
+  // CHECK-NEXT:         %{{.*}} = addf %{{.*}}, %{{.*}} : f32
+  // CHECK-NEXT:         store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
+  // CHECK-NEXT:       }
+  // CHECK-NEXT:     }
+  // CHECK-NEXT:     gpu.return
+  // CHECK-NEXT:   }
+  // CHECK-NEXT: }
+
 
   %d_ptr = memref_cast %d : memref<10xf32> to memref<*xf32>
   call @print_memref_f32(%d_ptr): (memref<*xf32>) -> ()
