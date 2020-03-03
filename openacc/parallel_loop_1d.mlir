@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
 // mlir-opt --convert-openacc-to-gpu %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
 
 func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
@@ -21,25 +21,25 @@ func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
   return %y : memref<1024xf32>
 }
 
-// CHECK: %c0 = constant 0 : index
-//  CHECK-NEXT:   %{{.*}} = constant 1 : index
-//  CHECK-NEXT:   %{{.*}} = constant 1 : index
-//  CHECK-NEXT:   %{{.*}} = constant 8 : index
-//  CHECK-NEXT:   %{{.*}} = constant 128 : index
-//  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
-//  CHECK-NEXT:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:      %{{.*}} = addi %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:      loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-//  CHECK-NEXT:        %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
-//  CHECK-NEXT:        %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
-//  CHECK-NEXT:        %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
-//  CHECK-NEXT:        %{{.*}} = addf %{{.*}}, %{{.*}} : f32
-//  CHECK-NEXT:        store %{{.*}}, %{{.*}}[%{{.*}}] : memref<1024xf32>
-//  CHECK-NEXT:      }
-//  CHECK-NEXT:      gpu.terminator
-//  CHECK-NEXT:    }
-
+// CHECK:      gpu.module @compute_acc_parallel {
+// CHECK-NEXT:   gpu.func @compute_acc_parallel(%{{.*}}: memref<1024xf32>, %{{.*}}: memref<1024xf32>, %{{.*}}: f32, %{{.*}}: index, %{{.*}}: index, %{{.*}}: index) kernel {
+// CHECK-NEXT:     %{{.*}} = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:     %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:     %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
+// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
+// CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:       %{{.*}} = addf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}] : memref<1024xf32>
+// CHECK-NEXT:     }
+// CHECK-NEXT:     gpu.return
+// CHECK-NEXT:   }
+// CHECK-NEXT: }
 
 func @main() {
   %x = alloc() : memref<1024xf32>
