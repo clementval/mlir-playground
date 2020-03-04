@@ -7,7 +7,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
 
   // y[i] = a*x[i] + y[i];
   acc.parallel num_gangs(8) num_workers(128) {
-    acc.loop {
+    acc.loop gang vector {
       loop.for %arg0 = %c0 to %n step %c1 {
         loop.for %arg1 = %c0 to %n step %c1 {
           loop.for %arg2 = %c0 to %n step %c1 {
