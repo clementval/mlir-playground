@@ -1,5 +1,5 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-target --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
 
 func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   %c0 = constant 0 : index
@@ -20,23 +20,28 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   return %x : memref<20xf32>
 }
 
-// CHECK:      gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
-// CHECK-NEXT:   %{{.*}} = constant 0 : index
-// CHECK-NEXT:   %{{.*}} = cmpi "eq", %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:   %{{.*}} = cmpi "eq", %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:   %{{.*}} = and %0, %1 : i1
-// CHECK-NEXT:   loop.if %{{.*}} {
-// CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
-// CHECK-NEXT:       %{{.*}} = subi %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
-// CHECK-NEXT:       %{{.*}} = addf %{{.*}}, %{{.*}} : f32
-// CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}] : memref<20xf32>
-// CHECK-NEXT:     }
-// CHECK-NEXT:   }
-// CHECK-NEXT:   gpu.barrier
-// CHECK-NEXT:   gpu.terminator
-// CHECK-NEXT: }
+// CHECK:       gpu.module @compute_acc_parallel {
+// CHECK-NEXT:    gpu.func @compute_acc_parallel(%{{.*}}: memref<20xf32>, %{{.*}}: index, %{{.*}}: index) kernel {
+// CHECK-NEXT:      [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[CONST0:%.*]] = constant 0 : index
+// CHECK-NEXT:      [[ISTID0:%.*]] = cmpi "eq", [[THREADID]], [[CONST0]] : index
+// CHECK-NEXT:      loop.if [[ISTID0]] {
+// CHECK-NEXT:        loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:          %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
+// CHECK-NEXT:          %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:          %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
+// CHECK-NEXT:          %{{.*}} = addf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:          store %{{.*}}, %{{.*}}[%{{.*}}] : memref<20xf32>
+// CHECK-NEXT:        }
+// CHECK-NEXT:      }
+// CHECK-NEXT:      gpu.barrier
+// CHECK-NEXT:      gpu.return
+// CHECK-NEXT:    }
+// CHECK-NEXT:  }
+
 
 // EXEC: [1,  2,  3,  4,  5,  6,  7,  8,  9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20]
 
