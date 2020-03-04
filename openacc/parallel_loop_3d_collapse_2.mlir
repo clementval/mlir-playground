@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
 
 func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   %n: index) -> memref<10x10x10xf32> {
@@ -23,20 +23,47 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   return %y : memref<10x10x10xf32>
 }
 
-//  CHECK:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT: loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-//  CHECK-NEXT:   %{{.*}} = remi_signed %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
-//  CHECK-NEXT:   loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-//  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
-//  CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
-//  CHECK-NEXT:     %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
-//  CHECK-NEXT:     store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
-//  CHECK-NEXT:   }
-//  CHECK-NEXT: }
+// CHECK:       gpu.module @compute_acc_parallel {
+// CHECK-NEXT:    gpu.func @compute_acc_parallel(%arg0: memref<10x10x10xf32>, %arg1: memref<10x10x10xf32>, %arg2: index, %arg3: index, %arg4: index) kernel {
+// CHECK-NEXT:      [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:      %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = constant 1 : index
+// CHECK-NEXT:      %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = constant 0 : index
+// CHECK-NEXT:      %{{.*}} = constant 1 : index
+// CHECK-NEXT:      %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = constant 1 : index
+// CHECK-NEXT:      %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      %{{.*}} = constant 0 : index
+// CHECK-NEXT:      %{{.*}} = constant 1 : index
+// CHECK-NEXT:      [[UPPERBOUND:%.*]] = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:      [[LBTMP:%.*]] = muli [[BLOCKID]], [[BLOCKDIM]] : index
+// CHECK-NEXT:      [[LOWERBOUND:%.*]] = addi [[LBTMP]], [[THREADID]] : index
+// CHECK-NEXT:      [[STEP:%.*]] = muli [[GRIDDIM]], [[BLOCKDIM]] : index
+// CHECK-NEXT:      loop.for [[IND:%.*]] = [[LOWERBOUND]] to [[UPPERBOUND]] step [[STEP]] {
+// CHECK-NEXT:        %{{.*}} = remi_signed [[IND]], %{{.*}} : index
+// CHECK-NEXT:        %{{.*}} = divi_signed [[IND]], %{{.*}} : index
+// CHECK-NEXT:        %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:        [[IDX2:%.*]] = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:        %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:        [[IDX1:%.*]] = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:        loop.for [[IDX3:%.*]] = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:          %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]], [[IDX3]]{{\]}} : memref<10x10x10xf32>
+// CHECK-NEXT:          %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]], [[IDX3]]{{\]}} : memref<10x10x10xf32>
+// CHECK-NEXT:          %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:          store %{{.*}}, %{{.*}}{{\[}}[[IDX1]], [[IDX2]], [[IDX3]]{{\]}} : memref<10x10x10xf32>
+// CHECK-NEXT:        }
+// CHECK-NEXT:      }
+// CHECK-NEXT:      gpu.return
+// CHECK-NEXT:    }
+// CHECK-NEXT:  }
 
 
 func @main() {
