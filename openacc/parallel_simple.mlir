@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
 
 func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
   %c0 = constant 0 : index
@@ -11,16 +11,17 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
   return %B : memref<10xf32>
 }
 
-// CHECK:       func @compute(%{{.*}}: memref<10xf32>, %{{.*}}: memref<10xf32>) -> memref<10xf32> {
-//  CHECK-NEXT:   %{{.*}}= constant 0 : index
-//  CHECK-NEXT:   %{{.*}}= constant 1 : index
-//  CHECK-NEXT:   gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
-//  CHECK-NEXT:      %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
-//  CHECK-NEXT:      store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
-//  CHECK-NEXT:      gpu.terminator
-//  CHECK-NEXT:   }
-//  CHECK-NEXT:   return %arg1 : memref<10xf32>
-//  CHECK-NEXT: }
+// CHECK:      gpu.module @compute_acc_parallel {
+// CHECK-NEXT:   gpu.func @compute_acc_parallel(%{{.*}}: memref<10xf32>, %{{.*}}: index, %{{.*}}: memref<10xf32>) kernel {
+// CHECK-NEXT:     %{{.*}} = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
+// CHECK-NEXT:     store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
+// CHECK-NEXT:     gpu.return
+// CHECK-NEXT:   }
+// CHECK-NEXT: }
 
 
 func @main() {
