@@ -20,20 +20,46 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   }
   return %y : memref<10x10xf32>
 }
- 
-// CHECK:      %{{.*}} = muli %{{.*}}, %{{.*}} : index
-// CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
-// CHECK-NEXT: %{{.*}} = addi %{{.*}}, %{{.*}} : index
-// CHECK-NEXT: %{{.*}} = muli %{{.*}}, %{{.*}} : index
-// CHECK-NEXT: loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-// CHECK-NEXT:   %{{.*}} = remi_signed %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:   %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
-// CHECK-NEXT:   %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
-// CHECK-NEXT:   %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
-// CHECK-NEXT:   store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
-// CHECK-NEXT: }
 
+// CHECK:      gpu.module @compute_acc_parallel {
+// CHECK-NEXT:   gpu.func @compute_acc_parallel(%{{.*}}: memref<10x10xf32>, %{{.*}}: memref<10x10xf32>, %{{.*}}: index, %{{.*}}: index, %{{.*}}: index) kernel {
+// CHECK-NEXT:       [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:       [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:       [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:       [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:       %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = constant 1 : index
+// CHECK-NEXT:       %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = constant 0 : index
+// CHECK-NEXT:       %{{.*}} = constant 1 : index
+// CHECK-NEXT:       %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = constant 1 : index
+// CHECK-NEXT:       %{{.*}} = subi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       %{{.*}} = constant 0 : index
+// CHECK-NEXT:       %{{.*}} = constant 1 : index
+// CHECK-NEXT:       [[UPPERBOUND:%.*]] = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:       [[LBTMP:%.*]] = muli [[BLOCKID]], [[BLOCKDIM]] : index
+// CHECK-NEXT:       [[LOWERBOUND:%.*]] = addi [[LBTMP]], [[THREADID]] : index
+// CHECK-NEXT:       [[STEP:%.*]] = muli [[GRIDDIM]], [[BLOCKDIM]] : index
+// CHECK-NEXT:       loop.for [[INDUC:%.*]] = [[LOWERBOUND]] to [[UPPERBOUND]] step [[STEP]] {
+// CHECK-NEXT:         %{{.*}} = remi_signed [[INDUC]], %{{.*}} : index
+// CHECK-NEXT:         %{{.*}} = divi_signed [[INDUC]], %{{.*}} : index
+// CHECK-NEXT:         %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:         [[IDX2:%.*]] = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:         %{{.*}} = muli %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:         [[IDX1:%.*]] = addi %{{.*}}, %{{.*}} : index
+// CHECK-NEXT:         %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]]{{\]}} : memref<10x10xf32>
+// CHECK-NEXT:         %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]]{{\]}} : memref<10x10xf32>
+// CHECK-NEXT:         %{{.*}} = mulf %{{.*}}, %{{.*}} : {{.*}}
+// CHECK-NEXT:         store %{{.*}}, %{{.*}}{{\[}}[[IDX1]], [[IDX2]]{{\]}} : memref<10x10xf32>
+// CHECK-NEXT:     }
+// CHECK-NEXT:     gpu.return
+// CHECK-NEXT:   }
+// CHECK-NEXT: }
 
 func @main() {
   %x = alloc() : memref<10x10xf32>
