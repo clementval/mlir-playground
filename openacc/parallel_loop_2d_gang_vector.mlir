@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
 
 func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   %n: index) -> memref<10x10xf32> {
@@ -23,19 +23,24 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   return %y : memref<10x10xf32>
 }
 
-
-// CHECK:      gpu.launch blocks(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) threads(%{{.*}}, %{{.*}}, %{{.*}}) in (%{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}, %{{.*}} = %{{.*}}) {
-// CHECK-NEXT:   loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-// CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
-// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
-// CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
-// CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK:      gpu.module @compute_acc_parallel {
+// CHECK-NEXT:   gpu.func @compute_acc_parallel(%{{.*}}: memref<10x10xf32>, %{{.*}}: memref<10x10xf32>, %{{.*}}: index, %{{.*}}: index, %{{.*}}: index) kernel {
+// CHECK-NEXT:     [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     loop.for %{{.*}} = [[BLOCKID]] to %{{.*}} step [[GRIDDIM]] {
+// CHECK-NEXT:       loop.for %{{.*}} = [[THREADID]] to %{{.*}} step [[BLOCKDIM]] {
+// CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT:         %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
+// CHECK-NEXT:         store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
+// CHECK-NEXT:       }
 // CHECK-NEXT:     }
+// CHECK-NEXT:     gpu.return
 // CHECK-NEXT:   }
-// CHECK-NEXT:   gpu.terminator
 // CHECK-NEXT: }
-  
+
 
 func @main() {
   %x = alloc() : memref<10x10xf32>
