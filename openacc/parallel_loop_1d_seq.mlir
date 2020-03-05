@@ -22,10 +22,7 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
 
 // CHECK:       gpu.module @compute_acc_parallel {
 // CHECK-NEXT:    gpu.func @compute_acc_parallel(%{{.*}}: memref<20xf32>, %{{.*}}: index, %{{.*}}: index) kernel {
-// CHECK-NEXT:      [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
 // CHECK-NEXT:      [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
-// CHECK-NEXT:      [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
-// CHECK-NEXT:      [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
 // CHECK-NEXT:      [[CONST0:%.*]] = constant 0 : index
 // CHECK-NEXT:      [[ISTID0:%.*]] = cmpi "eq", [[THREADID]], [[CONST0]] : index
 // CHECK-NEXT:      loop.if [[ISTID0]] {

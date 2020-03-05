@@ -13,10 +13,6 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
 
 //CHECK:       gpu.module @compute_acc_parallel {
 //CHECK-NEXT:    gpu.func @compute_acc_parallel(%{{.*}}: memref<10xf32>, %{{.*}}: index, %{{.*}}: memref<10xf32>) kernel {
-//CHECK-NEXT:      [[BLOCKID:%.*]] = "gpu.block_id"() {dimension = "x"} : () -> index
-//CHECK-NEXT:      [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
-//CHECK-NEXT:      [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
-//CHECK-NEXT:      [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
 //CHECK-NEXT:      %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
 //CHECK-NEXT:      store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
 //CHECK-NEXT:      gpu.return
