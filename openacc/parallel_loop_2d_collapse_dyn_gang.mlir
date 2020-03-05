@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
 
 func @compute(%x: memref<1024x1024xf32>, %y: memref<1024x1024xf32>,
   %n: index) -> memref<1024x1024xf32> {

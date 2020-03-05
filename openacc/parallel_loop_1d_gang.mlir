@@ -1,4 +1,4 @@
-// RUN: mlir-opt --convert-openacc-to-target %s | FileCheck %s
+// RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
 // mlir-opt --canonicalize --convert-openacc-to-target --convert-linalg-to-loops --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libcuda-runtime-wrapper%shlibext,%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void
 
 func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
