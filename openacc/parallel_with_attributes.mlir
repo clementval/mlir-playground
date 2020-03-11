@@ -4,20 +4,28 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
   %c0 = constant 0 : index
 
   acc.parallel num_gangs(2) num_workers(2) {
-    %tmp = load %A[%c0] : memref<10xf32>
-    store %tmp, %B[%c0] : memref<10xf32>
+    acc.gang_redundant {
+      %tmp = load %A[%c0] : memref<10xf32>
+      store %tmp, %B[%c0] : memref<10xf32>
+    }
   }
 
   return %B : memref<10xf32>
 }
 
-//CHECK:       gpu.module @compute_acc_parallel {
-//CHECK-NEXT:    gpu.func @compute_acc_parallel(%{{.*}}: memref<10xf32>, %{{.*}}: index, %{{.*}}: memref<10xf32>) kernel {
-//CHECK-NEXT:      %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
-//CHECK-NEXT:      store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
-//CHECK-NEXT:      gpu.return
-//CHECK-NEXT:    }
-//CHECK-NEXT:  }
+// CHECK:       gpu.module @compute_acc_parallel {
+// CHECK-NEXT:    gpu.func @compute_acc_parallel(%{{.*}}: memref<10xf32>, %{{.*}}: index, %{{.*}}: memref<10xf32>) kernel {
+// CHECK-NEXT:     [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
+// CHECK-NEXT:     [[CST0:%.*]] = constant 0 : index
+// CHECK-NEXT:     [[ISTHREAD0:%.*]] = cmpi "eq", [[THREADID]], [[CST0]] : index
+// CHECK-NEXT:     loop.if [[ISTHREAD0]] {
+// CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
+// CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
+// CHECK-NEXT:     }
+// CHECK-NEXT:     gpu.barrier
+// CHECK-NEXT:     gpu.return
+// CHECK-NEXT:    }
+// CHECK-NEXT:  }
 
 
 func @main() {
