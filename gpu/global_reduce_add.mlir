@@ -2,20 +2,36 @@
 
 module attributes {gpu.container_module} {
   gpu.module @compute_acc_parallel {
-    gpu.func @compute_acc_parallel(%arg0: memref<5x5xf32>, %arg1: memref<5xf32>, %arg2: index) kernel {
+    gpu.func @compute_acc_parallel(%arg0: memref<5x5xf32>, %n: index, %sum_red_buffer: memref<5xf32>) private(%sum: memref<1xf32, 5>) kernel {
       %bidx = "gpu.block_id"() {dimension = "x"} : () -> index
       %tidx = "gpu.thread_id"() {dimension = "x"} : () -> index
-
+      %griddim = "gpu.grid_dim"() {dimension = "x"} : () -> index
+      %blockdim = "gpu.block_dim"() {dimension = "x"} : () -> index
+      %init = constant 0.0 : f32
       %c0 = constant 0 : index
+      store %init, %sum[%c0] : memref<1xf32, 5>
 
-      %val = load %arg0[%bidx, %tidx] : memref<5x5xf32>
+      loop.for %i = %bidx to %n step %griddim {
+        loop.for %j = %tidx to %n step %blockdim {
+          %val = load %arg0[%i, %j] : memref<5x5xf32>
+          %crt = load %sum[%c0] : memref<1xf32, 5>
+          %add = addf %val, %crt : f32
+          store %add, %sum[%c0] : memref<1xf32, 5>
+        }
+      }
+      
+      gpu.barrier
 
-      %sum = "gpu.all_reduce"(%val) ({}) { op = "add" } : (f32) -> (f32)
+      %sum_val = load %sum[%c0] : memref<1xf32, 5>
+      %res = "gpu.all_reduce"(%sum_val) ({}) { op = "add" } : (f32) -> (f32)  
+           
+      gpu.barrier           
 
+      // Write to reduction buffer
       %istid0 = cmpi "eq", %tidx, %c0 : index
       cond_br %istid0, ^tidxblock, ^continue
     ^tidxblock :
-        store %sum, %arg1[%bidx] : memref<5xf32>
+        store %res, %sum_red_buffer[%bidx] : memref<5xf32>
         br ^continue
     ^continue :
       gpu.return
@@ -52,7 +68,10 @@ module attributes {gpu.container_module} {
     // Init reduction value
     store %cst0, %sum[%c0] : memref<1xf32>
     // Call the kernel
-    "gpu.launch_func"(%c5, %c1, %c1, %c5, %c1, %c1, %data, %sum_reduce_buffer, %n) {kernel = "compute_acc_parallel", kernel_module = @compute_acc_parallel} : (index, index, index, index, index, index, memref<5x5xf32>, memref<5xf32>, index) -> ()
+    "gpu.launch_func"(%c5, %c1, %c1, %c5, %c1, %c1, %data, %n, %sum_reduce_buffer) {kernel = "compute_acc_parallel", kernel_module = @compute_acc_parallel} : (index, index, index, index, index, index, memref<5x5xf32>, index, memref<5xf32>) -> ()
+    %ptr1 = memref_cast %sum_reduce_buffer : memref<5xf32> to memref<*xf32>
+    call @print_memref_f32(%ptr1) : (memref<*xf32>) -> ()
+
     // Sum the reduction_buffer
     loop.for %i = %c0 to %c5 step %c1 {
       %tmp = load %sum_reduce_buffer[%i] : memref<5xf32>
