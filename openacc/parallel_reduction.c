@@ -1,12 +1,10 @@
 #include <stdio.h>
 
 
-#define N 5
-
 int main() {
 
 
-  float data[N][N];
+  float data[5][5];
   float sum;
 
   for (int i = 0; i < N; ++i) {
@@ -16,11 +14,11 @@ int main() {
   }
 
 
-  #pragma acc data copyin(data[N][N]) 
+  #pragma acc data copyin(data[5][5]) 
   {
     #pragma acc parallel loop collapse(2) gang vector reduction(+:sum)
-    for (int i = 0; i < N; ++i) {
-      for (int j = 0; j < N; ++j) {
+    for (int i = 0; i < 5; ++i) {
+      for (int j = 0; j < 5; ++j) {
         sum += data[i][j];
       }
     }
