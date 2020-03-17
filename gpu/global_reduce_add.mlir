@@ -9,21 +9,20 @@ module attributes {gpu.container_module} {
       %blockdim = "gpu.block_dim"() {dimension = "x"} : () -> index
       %init = constant 0.0 : f32
       %c0 = constant 0 : index
-      store %init, %sum[%c0] : memref<1xf32, 5>
 
-      loop.for %i = %bidx to %n step %griddim {
-        loop.for %j = %tidx to %n step %blockdim {
+      %sum0 = loop.for %i = %bidx to %n step %griddim iter_args(%sum0_iter = %init) -> (f32) {
+        %sum1 = loop.for %j = %tidx to %n step %blockdim iter_args(%sum1_iter = %init) -> (f32) {
           %val = load %arg0[%i, %j] : memref<5x5xf32>
-          %crt = load %sum[%c0] : memref<1xf32, 5>
-          %add = addf %val, %crt : f32
-          store %add, %sum[%c0] : memref<1xf32, 5>
+          %sum1_next = addf %sum1_iter, %val : f32
+          loop.yield %sum1_next : f32
         }
+        %sum0_next = addf %sum0_iter, %sum1 : f32
+        loop.yield %sum0_next : f32
       }
       
       gpu.barrier
 
-      %sum_val = load %sum[%c0] : memref<1xf32, 5>
-      %res = "gpu.all_reduce"(%sum_val) ({}) { op = "add" } : (f32) -> (f32)  
+      %res = "gpu.all_reduce"(%sum0) ({}) { op = "add" } : (f32) -> (f32)  
            
       gpu.barrier           
 
