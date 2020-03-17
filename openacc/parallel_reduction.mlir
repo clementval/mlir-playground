@@ -5,7 +5,7 @@ func @compute(%A: memref<10xf32>) -> () {
   %c1 = constant 1 : index
   %n = constant 10 : index
   acc.parallel num_gangs(2) num_workers(5) {
-    acc.loop gang worker {
+    %reduction = acc.loop gang worker () -> (f32) {
       %sum_0 = constant 0.0 : f32
       %sum = loop.for %i = %c0 to %n step %c1 iter_args(%sum_iter = %sum_0) -> f32 {
         %val = load %A[%i] : memref<10xf32>
@@ -13,6 +13,7 @@ func @compute(%A: memref<10xf32>) -> () {
         loop.yield %sum_next : f32
       }
       %res = "acc.reduction"(%sum) {op = "add"} : (f32) -> (f32)
+      acc.yield %res
     }
   }
 
