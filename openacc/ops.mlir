@@ -49,7 +49,6 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   // CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
   // CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
   // CHECK-NEXT:     }
-  // CHECK-NEXT:     acc.yield
   // CHECK-NEXT:   }
   // CHECK-NEXT:   acc.gang_redundant {
   // CHECK-NEXT:   } 
