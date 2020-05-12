@@ -4,9 +4,11 @@
 func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
+  %i32_1 = constant 1 : i32
+  %i32_128 = constant 128 : i32
 
   // x[i] = x[i] + x[i-1];
-  acc.parallel num_gangs(1) num_workers(128) {
+  acc.parallel num_gangs(%i32_1) num_workers(%i32_128) {
     acc.loop seq {
       loop.for %arg0 = %c1 to %n step %c1 {
         %xi = load %x[%arg0] : memref<20xf32>

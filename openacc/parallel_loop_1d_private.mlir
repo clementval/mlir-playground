@@ -14,13 +14,14 @@ func @main() {
   %lb = constant 0 : index
   %st = constant 1 : index
   %n = constant 10 : index
+  %i32_10 = constant 10 : i32
 
   linalg.fill(%a, %ca) : memref<10x10xf32>, f32
   linalg.fill(%b, %cb) : memref<10x10xf32>, f32
   linalg.fill(%c, %zero) : memref<10xf32>, f32
   linalg.fill(%d, %zero) : memref<10xf32>, f32
 
-  acc.parallel num_gangs(10) num_workers(10) private(%c : memref<10xf32>) {
+  acc.parallel num_gangs(%i32_10) num_workers(%i32_10) private(%c : memref<10xf32>) {
     acc.loop gang {
       // for x = 0 to 10 step 1
       //   for y = 0 to 10 step 1

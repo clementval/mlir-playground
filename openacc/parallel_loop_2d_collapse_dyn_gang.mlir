@@ -35,7 +35,7 @@ func @compute(%x: memref<1024x1024xf32>, %y: memref<1024x1024xf32>,
 // CHECK-NEXT:   [[NUMGANGS:%.*]] = divi_signed %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:   [[NUMWORKERS:%.*]] = constant 128 : index
 // CHECK-NEXT:   %{{.*}} = constant 1 : index
-// CHECK-NEXT:   "gpu.launch_func"([[NUMGANGS]], %{{.*}}, %{{.*}}, [[NUMWORKERS]], %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}) {kernel = "compute_acc_parallel", kernel_module = @compute_acc_parallel} : (index, index, index, index, index, index, memref<1024x1024xf32>, memref<1024x1024xf32>, index, index, index) -> ()
+// CHECK-NEXT:   "gpu.launch_func"([[NUMGANGS]], %{{.*}}, %{{.*}}, [[NUMWORKERS]], %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}, %{{.*}}) {kernel = @compute_acc_parallel::@compute_acc_parallel} : (index, index, index, index, index, index, memref<1024x1024xf32>, memref<1024x1024xf32>, index, index, index) -> ()
 // CHECK-NEXT:   return %{{.*}} : memref<1024x1024xf32>
 // CHECK-NEXT: }
 // CHECK-NEXT: gpu.module @compute_acc_parallel {

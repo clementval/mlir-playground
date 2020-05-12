@@ -4,9 +4,11 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   %n: index) -> memref<10x10x10xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
+  %i32_8 = constant 8 : i32
+  %i32_128 = constant 128 : i32
 
   // y[i] = a*x[i] + y[i];
-  acc.parallel num_gangs(8) num_workers(128) {
+  acc.parallel num_gangs(%i32_8) num_workers(%i32_128) {
     acc.loop gang vector {
       loop.for %arg0 = %c0 to %n step %c1 {
         loop.for %arg1 = %c0 to %n step %c1 {

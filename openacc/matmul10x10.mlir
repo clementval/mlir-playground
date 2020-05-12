@@ -8,7 +8,8 @@ func @compute(%arg0: memref<100xf32>, %arg1: memref<100xf32>,
   %c0 = constant 0 : index
   %c10 = constant 10 : index
   %c1 = constant 1 : index
-  acc.parallel num_gangs(10) num_workers(10) {
+  %i32_10 = constant 10 : i32
+  acc.parallel num_gangs(%i32_10) num_workers(%i32_10) {
     acc.loop gang vector {
       loop.for %i = %c0 to %c10 step %c1 {
         loop.for %j = %c0 to %c10 step %c1 {
