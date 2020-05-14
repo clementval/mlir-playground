@@ -9,9 +9,9 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
   // y[i] = a*x[i] + y[i];
   acc.parallel num_gangs(%i32_10) num_workers(%i32_10) {
     acc.loop gang {
-      loop.for %arg0 = %c0 to %n step %c1 {
+      scf.for %arg0 = %c0 to %n step %c1 {
         acc.loop vector {
-          loop.for %arg1 = %c0 to %n step %c1 {
+          scf.for %arg1 = %c0 to %n step %c1 {
             %xi = load %x[%arg0, %arg1] : memref<10x10xf32>
             %yi = load %y[%arg0, %arg1] : memref<10x10xf32>
             %yy = mulf %xi, %yi : f32
@@ -30,8 +30,8 @@ func @compute(%x: memref<10x10xf32>, %y: memref<10x10xf32>,
 // CHECK-NEXT:     [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
 // CHECK-NEXT:     [[GRIDDIM:%.*]] = "gpu.grid_dim"() {dimension = "x"} : () -> index
 // CHECK-NEXT:     [[BLOCKDIM:%.*]] = "gpu.block_dim"() {dimension = "x"} : () -> index
-// CHECK-NEXT:     loop.for %{{.*}} = [[BLOCKID]] to %{{.*}} step [[GRIDDIM]] {
-// CHECK-NEXT:       loop.for %{{.*}} = [[THREADID]] to %{{.*}} step [[BLOCKDIM]] {
+// CHECK-NEXT:     scf.for %{{.*}} = [[BLOCKID]] to %{{.*}} step [[GRIDDIM]] {
+// CHECK-NEXT:       scf.for %{{.*}} = [[THREADID]] to %{{.*}} step [[BLOCKDIM]] {
 // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
 // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
 // CHECK-NEXT:         %{{.*}} = mulf %{{.*}}, %{{.*}} : f32

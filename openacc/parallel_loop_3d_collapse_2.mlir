@@ -9,9 +9,9 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   // y[i] = a*x[i] + y[i];
   acc.parallel num_gangs(%i32_10) num_workers(%i32_10) {
     acc.loop gang vector {
-      loop.for %arg0 = %c0 to %n step %c1 {
-        loop.for %arg1 = %c0 to %n step %c1 {
-          loop.for %arg2 = %c0 to %n step %c1 {
+      scf.for %arg0 = %c0 to %n step %c1 {
+        scf.for %arg1 = %c0 to %n step %c1 {
+          scf.for %arg2 = %c0 to %n step %c1 {
             %xi = load %x[%arg0, %arg1, %arg2] : memref<10x10x10xf32>
             %yi = load %y[%arg0, %arg1, %arg2] : memref<10x10x10xf32>
             %yy = mulf %xi, %yi : f32
@@ -48,14 +48,14 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
 // CHECK-NEXT:      [[LBTMP:%.*]] = muli [[BLOCKID]], [[BLOCKDIM]] : index
 // CHECK-NEXT:      [[LOWERBOUND:%.*]] = addi [[LBTMP]], [[THREADID]] : index
 // CHECK-NEXT:      [[STEP:%.*]] = muli [[GRIDDIM]], [[BLOCKDIM]] : index
-// CHECK-NEXT:      loop.for [[IND:%.*]] = [[LOWERBOUND]] to [[UPPERBOUND]] step [[STEP]] {
+// CHECK-NEXT:      scf.for [[IND:%.*]] = [[LOWERBOUND]] to [[UPPERBOUND]] step [[STEP]] {
 // CHECK-NEXT:        %{{.*}} = remi_signed [[IND]], %{{.*}} : index
 // CHECK-NEXT:        %{{.*}} = divi_signed [[IND]], %{{.*}} : index
 // CHECK-NEXT:        %{{.*}} = muli %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:        [[IDX2:%.*]] = addi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:        %{{.*}} = muli %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:        [[IDX1:%.*]] = addi %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:        loop.for [[IDX3:%.*]] = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:        scf.for [[IDX3:%.*]] = %{{.*}} to %{{.*}} step %{{.*}} {
 // CHECK-NEXT:          %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]], [[IDX3]]{{\]}} : memref<10x10x10xf32>
 // CHECK-NEXT:          %{{.*}} = load %{{.*}}{{\[}}[[IDX1]], [[IDX2]], [[IDX3]]{{\]}} : memref<10x10x10xf32>
 // CHECK-NEXT:          %{{.*}} = mulf %{{.*}}, %{{.*}} : f32

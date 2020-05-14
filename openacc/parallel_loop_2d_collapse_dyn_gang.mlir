@@ -8,8 +8,8 @@ func @compute(%x: memref<1024x1024xf32>, %y: memref<1024x1024xf32>,
   // y[i] = a*x[i] + y[i];
   acc.parallel {
     acc.loop gang vector {
-      loop.for %arg0 = %c0 to %n step %c1 {
-        loop.for %arg1 = %c0 to %n step %c1 {
+      scf.for %arg0 = %c0 to %n step %c1 {
+        scf.for %arg1 = %c0 to %n step %c1 {
           %xi = load %x[%arg0, %arg1] : memref<1024x1024xf32>
           %yi = load %y[%arg0, %arg1] : memref<1024x1024xf32>
           %yy = mulf %xi, %yi : f32
@@ -62,7 +62,7 @@ func @compute(%x: memref<1024x1024xf32>, %y: memref<1024x1024xf32>,
 // CHECK-NEXT:     [[TMPLB:%.*]] = muli [[BLOCKID]], [[BLOCKDIM]] : index
 // CHECK-NEXT:     [[LB:%.*]] = addi [[TMPLB]], [[THREADID]] : index
 // CHECK-NEXT:     [[STEP:%.*]] = muli [[GRIDDIM]], [[BLOCKDIM]] : index
-// CHECK-NEXT:     loop.for [[IND:%.*]] = [[LB]] to [[UB]] step [[STEP]] {
+// CHECK-NEXT:     scf.for [[IND:%.*]] = [[LB]] to [[UB]] step [[STEP]] {
 // CHECK-NEXT:       %{{.*}} = remi_signed [[IND]], %{{.*}} : index
 // CHECK-NEXT:       %{{.*}} = divi_signed [[IND]], %{{.*}} : index
 // CHECK-NEXT:       %{{.*}} = muli %{{.*}}, %{{.*}} : index

@@ -10,7 +10,7 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   // x[i] = x[i] + x[i-1];
   acc.parallel num_gangs(%i32_1) num_workers(%i32_128) {
     acc.loop seq {
-      loop.for %arg0 = %c1 to %n step %c1 {
+      scf.for %arg0 = %c1 to %n step %c1 {
         %xi = load %x[%arg0] : memref<20xf32>
         %im1 = subi %arg0, %c1 : index
         %xim1 = load %x[%im1] : memref<20xf32>
@@ -27,8 +27,8 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
 // CHECK-NEXT:      [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
 // CHECK-NEXT:      [[CONST0:%.*]] = constant 0 : index
 // CHECK-NEXT:      [[ISTID0:%.*]] = cmpi "eq", [[THREADID]], [[CONST0]] : index
-// CHECK-NEXT:      loop.if [[ISTID0]] {
-// CHECK-NEXT:        loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:      scf.if [[ISTID0]] {
+// CHECK-NEXT:        scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 // CHECK-NEXT:          %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
 // CHECK-NEXT:          %{{.*}} = subi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:          %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>

@@ -9,7 +9,7 @@ func @compute(%A: memref<10xf32>) -> () {
   acc.parallel num_gangs(%i32_2) num_workers(%i32_5) {
     %reduction = acc.loop gang worker -> (f32) {
       %sum_0 = constant 0.0 : f32
-      %sum = loop.for %i = %c0 to %n step %c1 iter_args(%sum_iter = %sum_0) -> f32 {
+      %sum = scf.for %i = %c0 to %n step %c1 iter_args(%sum_iter = %sum_0) -> f32 {
         %val = load %A[%i] : memref<10xf32>
         %sum_next = addf %sum_iter, %val : f32
         loop.yield %sum_next : f32

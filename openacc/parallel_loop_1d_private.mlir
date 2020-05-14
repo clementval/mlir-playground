@@ -26,9 +26,9 @@ func @main() {
       // for x = 0 to 10 step 1
       //   for y = 0 to 10 step 1
       //     c[y] = a[x,y] + b[x,y]
-      loop.for %x = %lb to %n step %st {
+      scf.for %x = %lb to %n step %st {
         acc.loop worker {
-          loop.for %y = %lb to %n step %st {
+          scf.for %y = %lb to %n step %st {
             %axy = load %a[%x, %y] : memref<10x10xf32>
             %bxy = load %b[%x, %y] : memref<10x10xf32>
             %tmp = addf %axy, %bxy : f32
@@ -39,7 +39,7 @@ func @main() {
         acc.loop seq {
           // for i = 0 to 10 step 1
           //   d[x] += c[i]
-          loop.for %i = %lb to %n step %st {
+          scf.for %i = %lb to %n step %st {
             %ci = load %c[%i] : memref<10xf32>
             %dx = load %d[%x] : memref<10xf32>
             %z = addf %ci, %dx : f32  
@@ -57,14 +57,14 @@ func @main() {
   // CHECK-NEXT:     %{{.*}} = "gpu.thread_id"() {dimension = "x"} : () -> index
   // CHECK-NEXT:     %{{.*}} = "gpu.grid_dim"() {dimension = "x"} : () -> index
   // CHECK-NEXT:     %{{.*}} = "gpu.block_dim"() {dimension = "x"} : () -> index
-  // CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
-  // CHECK-NEXT:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:     scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:       scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
   // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
   // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}] : memref<10x10xf32>
   // CHECK-NEXT:         %{{.*}} = addf %{{.*}}, %{{.*}} : f32
   // CHECK-NEXT:         store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32, 3>
   // CHECK-NEXT:       }
-  // CHECK-NEXT:       loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+  // CHECK-NEXT:       scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
   // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32, 3>
   // CHECK-NEXT:         %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
   // CHECK-NEXT:         %{{.*}} = addf %{{.*}}, %{{.*}} : f32

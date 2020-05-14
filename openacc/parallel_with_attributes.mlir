@@ -19,7 +19,7 @@ func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
 // CHECK-NEXT:     [[THREADID:%.*]] = "gpu.thread_id"() {dimension = "x"} : () -> index
 // CHECK-NEXT:     [[CST0:%.*]] = constant 0 : index
 // CHECK-NEXT:     [[ISTHREAD0:%.*]] = cmpi "eq", [[THREADID]], [[CST0]] : index
-// CHECK-NEXT:     loop.if [[ISTHREAD0]] {
+// CHECK-NEXT:     scf.if [[ISTHREAD0]] {
 // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<10xf32>
 // CHECK-NEXT:       store %{{.*}}, %{{.*}}[%{{.*}}] : memref<10xf32>
 // CHECK-NEXT:     }

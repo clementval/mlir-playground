@@ -12,9 +12,9 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   // CHECK-NEXT:   acc.loop gang vector {
   acc.parallel num_gangs(%gangs) num_workers(%workers) {
     acc.loop gang vector {
-      loop.for %arg0 = %c0 to %n step %c1 {
-        loop.for %arg1 = %c0 to %n step %c1 {
-          loop.for %arg2 = %c0 to %n step %c1 {
+      scf.for %arg0 = %c0 to %n step %c1 {
+        scf.for %arg1 = %c0 to %n step %c1 {
+          scf.for %arg2 = %c0 to %n step %c1 {
             %xi = load %x[%arg0, %arg1, %arg2] : memref<10x10x10xf32>
             %yi = load %y[%arg0, %arg1, %arg2] : memref<10x10x10xf32>
             %yy = mulf %xi, %yi : f32
@@ -32,7 +32,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   acc.parallel {
     acc.loop {}
     acc.loop seq {
-      loop.for %arg2 = %c0 to %n step %c1 {
+      scf.for %arg2 = %c0 to %n step %c1 {
         %xi = load %x[%c0, %c1, %arg2] : memref<10x10x10xf32>
         %yi = load %y[%c0, %c1, %arg2] : memref<10x10x10xf32>
         %yy = mulf %xi, %yi : f32
@@ -45,7 +45,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   // CHECK-NEXT:   acc.gang_redundant {
   // CHECK-NEXT:   }
   // CHECK-NEXT:   acc.loop {
-  // CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {  
+  // CHECK-NEXT:     scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {  
   // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
   // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}, %{{.*}}, %{{.*}}] : memref<10x10x10xf32>
   // CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
@@ -59,7 +59,7 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
     acc.gang_redundant {
     }
     acc.loop {
-      loop.for %arg2 = %c0 to %n step %c1 {
+      scf.for %arg2 = %c0 to %n step %c1 {
         %xi = load %x[%c0, %c1, %arg2] : memref<10x10x10xf32>
         %yi = load %y[%c0, %c1, %arg2] : memref<10x10x10xf32>
         %yy = mulf %xi, %yi : f32

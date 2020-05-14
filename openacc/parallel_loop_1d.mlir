@@ -10,7 +10,7 @@ func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
   // y[i] = a*x[i] + y[i];
   acc.parallel num_gangs(%i32_8) num_workers(%i32_128) {
     acc.loop gang vector {
-      loop.for %arg0 = %c0 to %n step %c1 {
+      scf.for %arg0 = %c0 to %n step %c1 {
         %xi = load %x[%arg0] : memref<1024xf32>
         %yi = load %y[%arg0] : memref<1024xf32>
         %ax = mulf %a, %xi : f32
@@ -31,7 +31,7 @@ func @compute(%x: memref<1024xf32>, %y: memref<1024xf32>,
 // CHECK-NEXT:     %{{.*}} = muli %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:     %{{.*}} = addi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:     %{{.*}} = muli %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:     loop.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
+// CHECK-NEXT:     scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
 // CHECK-NEXT:       %{{.*}} = load %{{.*}}[%{{.*}}] : memref<1024xf32>
 // CHECK-NEXT:       %{{.*}} = mulf %{{.*}}, %{{.*}} : f32
