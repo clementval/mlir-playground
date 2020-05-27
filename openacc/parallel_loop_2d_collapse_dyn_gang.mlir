@@ -25,8 +25,8 @@ func @compute(%x: memref<1024x1024xf32>, %y: memref<1024x1024xf32>,
 // CHECK-NEXT:   %{{.*}} = constant 0 : index
 // CHECK-NEXT:   %{{.*}} = constant 1 : index
 // CHECK-NEXT:   %{{.*}} = subi %{{.*}}, %{{.*}} : index
-// CHECK-NEXT:   %{{.*}} = constant 0 : index
 // CHECK-NEXT:   %{{.*}} = constant 1 : index
+// CHECK-NEXT:   %{{.*}} = subi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:   %{{.*}} = addi %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:   %{{.*}} = divi_signed %{{.*}}, %{{.*}} : index
 // CHECK-NEXT:   %{{.*}} = constant 127 : index

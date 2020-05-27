@@ -39,8 +39,10 @@ func @main() {
   linalg.fill(%y, %c2) : memref<10xf32>, f32
 
   %z = call @compute(%x, %y) : (memref<10xf32>, memref<10xf32>) -> memref<10xf32>
-  call @print_memref_1d_f32(%z): (memref<10xf32>) -> ()
+
+  %zp = memref_cast %z : memref<10xf32> to memref<*xf32>
+  call @print_memref_f32(%zp) : (memref<*xf32>) -> ()
   return
 }
 
-func @print_memref_1d_f32(memref<10xf32>)
+func @print_memref_f32(%ptr : memref<*xf32>)

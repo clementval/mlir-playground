@@ -1,5 +1,5 @@
 // RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-loop-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-scf-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
 
 func @main() {
   %a = alloc() : memref<10x10xf32>
@@ -14,7 +14,7 @@ func @main() {
   %lb = constant 0 : index
   %st = constant 1 : index
   %n = constant 10 : index
-  %i32_10 = constant 10 : i32
+  %i32_10 = constant 10 : index
 
   linalg.fill(%a, %ca) : memref<10x10xf32>, f32
   linalg.fill(%b, %cb) : memref<10x10xf32>, f32

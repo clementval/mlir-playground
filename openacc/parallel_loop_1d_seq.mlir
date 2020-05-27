@@ -1,11 +1,11 @@
 // RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-scf-to-std %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void | FileCheck --check-prefix=EXEC %s
 
 func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
-  %i32_1 = constant 1 : i32
-  %i32_128 = constant 128 : i32
+  %i32_1 = constant 1 : index
+  %i32_128 = constant 128 : index
 
   // x[i] = x[i] + x[i-1];
   acc.parallel num_gangs(%i32_1) num_workers(%i32_128) {

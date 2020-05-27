@@ -2,7 +2,7 @@
 
 func @compute(%A: memref<10xf32>, %B: memref<10xf32>) -> memref<10xf32> {
   %c0 = constant 0 : index
-  %i32_2 = constant 2 : i32
+  %i32_2 = constant 2 : index
 
   acc.parallel num_gangs(%i32_2) num_workers(%i32_2) {
     acc.gang_redundant {

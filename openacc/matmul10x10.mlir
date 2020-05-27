@@ -1,5 +1,5 @@
 // RUN: mlir-opt --convert-openacc-to-gpu %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-loop-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void 
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-gpu --convert-scf-to-std --gpu-kernel-outlining %s | mlir-cuda-runner --shared-libs=%cuda_wrapper_library_dir/libmlir_runner_utils%shlibext,%linalg_test_lib_dir/libcuda-runtime-wrappers%shlibext,%oaru_library_dir/liboaru%shlibext --entry-point-result=void 
 
 func @compute(%arg0: memref<100xf32>, %arg1: memref<100xf32>,
   %arg2: memref<100xf32>) -> () {
@@ -8,7 +8,7 @@ func @compute(%arg0: memref<100xf32>, %arg1: memref<100xf32>,
   %c0 = constant 0 : index
   %c10 = constant 10 : index
   %c1 = constant 1 : index
-  %i32_10 = constant 10 : i32
+  %i32_10 = constant 10 : index
   acc.parallel num_gangs(%i32_10) num_workers(%i32_10) {
     acc.loop gang vector {
       scf.for %i = %c0 to %c10 step %c1 {

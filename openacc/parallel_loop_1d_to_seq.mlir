@@ -1,11 +1,11 @@
 // RUN: mlir-opt --convert-openacc-to-standard %s | FileCheck %s
-// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-standard --convert-loop-to-std -convert-linalg-to-llvm --convert-std-to-llvm %s | mlir-cpu-runner --shared-libs=%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void 
+// RUN: mlir-opt --canonicalize --convert-linalg-to-loops --convert-openacc-to-standard --convert-scf-to-std -convert-linalg-to-llvm --convert-std-to-llvm %s | mlir-cpu-runner --shared-libs=%linalg_test_lib_dir/libmlir_runner_utils%shlibext --entry-point-result=void 
 
 func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
-  %i32_8 = constant 8 : i32
-  %i32_128 = constant 128 : i32
+  %i32_8 = constant 8 : index
+  %i32_128 = constant 128 : index
 
   // x[i] = x[i] + x[i-1];
   acc.parallel num_gangs(%i32_8) num_workers(%i32_128) {
@@ -24,8 +24,8 @@ func @compute(%x: memref<20xf32>, %n: index) -> memref<20xf32> {
 
 // CHECK:      %{{.*}} = constant 0 : index
 // CHECK-NEXT: %{{.*}} = constant 1 : index
-// CHECK-NEXT: %{{.*}} = constant 8 : i32
-// CHECK-NEXT: %{{.*}} = constant 128 : i32
+// CHECK-NEXT: %{{.*}} = constant 8 : index
+// CHECK-NEXT: %{{.*}} = constant 128 : index
 // CHECK-NEXT: scf.for %{{.*}} = %{{.*}} to %{{.*}} step %{{.*}} {
 // CHECK-NEXT:   %{{.*}} = load %{{.*}}[%{{.*}}] : memref<20xf32>
 // CHECK-NEXT:   %{{.*}} = subi %{{.*}}, %{{.*}} : index

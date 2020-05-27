@@ -4,8 +4,8 @@ func @compute(%x: memref<10x10x10xf32>, %y: memref<10x10x10xf32>,
   %n: index) -> memref<10x10x10xf32> {
   %c0 = constant 0 : index
   %c1 = constant 1 : index
-  %gangs = constant 8 : i32
-  %workers = constant 128 : i32
+  %gangs = constant 8 : index
+  %workers = constant 128 : index
 
   // y[i] = a*x[i] + y[i];
   // CHECK:      acc.parallel num_gangs(%{{.*}}) num_workers(%{{.*}}) {
